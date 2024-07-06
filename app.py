@@ -10,6 +10,7 @@ app = Flask(__name__)
 
 # Set your OpenAI API key here
 openai.api_key = 'sk-proj-JAeipb6Clq2dLjB8JOePT3BlbkFJd1QYzUtRW7Kv3t2WBo0I'
+
 metriport_api_key = 'NzNCSTZuS0ZQalVoT2pmX0tfb1laOjE3Mzg4Y2Q4LTUwOGMtNDU1ZC04YzA4LWI3MjQwMzU0YTBkYg'
 API_URL = "https://api.sandbox.metriport.com/medical/v1/patient/{}/consolidated"
 
@@ -136,7 +137,7 @@ def summarize_content(content, max_chunk_size=20000, max_words=500, summary_only
         for chunk in chunks:
             chunk_with_previous_summary = previous_summary + "\n" + chunk if previous_summary else chunk
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant specialized in summarizing medical information."},
                     {"role": "user", "content": f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{chunk_with_previous_summary}"}
