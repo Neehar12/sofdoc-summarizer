@@ -15,7 +15,7 @@ app = Flask(__name__)
 GOOGLE_API_KEY='AIzaSyA8EOCI5LMbExR1Ifexh-rZPvMuey_OMss'
 
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+model = genai.GenerativeModel(model_name="gemini-1.5-pro")
 # response = model.generate_content(["What is in this photo?", img])
 # print(response.text)
 # openai.api_key = 'sk-proj-JAeipb6Clq2dLjB8JOePT3BlbkFJd1QYzUtRW7Kv3t2WBo0I'
@@ -102,7 +102,7 @@ def parse_patient_history(patient_history):
             continue 
         content = formatter(resources)
         if resource_type == "Observation":
-            summary = summarize_content(content, max_chunk_size=300000)
+            summary = summarize_content(content, max_chunk_size=2000000)
         elif resource_type == "Procedure":
             summary = summarize_content(content)
         else:
@@ -116,7 +116,7 @@ def parse_patient_history(patient_history):
     final_summary = summarize_content(concatenated_summaries, summary_only=True)
     
     config = genai.GenerationConfig(
-        max_output_tokens=4000, temperature=0
+        max_output_tokens=4000, temperature=0, 
     )
 
     # Generate text
@@ -127,7 +127,7 @@ def parse_patient_history(patient_history):
     
     return summarized_history, ultimate_summary
 
-def summarize_content(content, max_chunk_size=200000, max_words=500, summary_only=False):
+def summarize_content(content, max_chunk_size=2000000, max_words=500, summary_only=False):
     try:
         # Split content into chunks if it exceeds the maximum chunk size
         chunks = []
