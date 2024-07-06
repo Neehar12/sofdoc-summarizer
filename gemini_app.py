@@ -15,7 +15,7 @@ app = Flask(__name__)
 GOOGLE_API_KEY='AIzaSyA8EOCI5LMbExR1Ifexh-rZPvMuey_OMss'
 
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel(model_name="gemini-1.5-pro")
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 # response = model.generate_content(["What is in this photo?", img])
 # print(response.text)
 # openai.api_key = 'sk-proj-JAeipb6Clq2dLjB8JOePT3BlbkFJd1QYzUtRW7Kv3t2WBo0I'
