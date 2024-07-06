@@ -41,7 +41,6 @@ patient_history = response.json()
 
 def formatter(resources):
     output = ''
-    num_output = 0
     for resource in resources:
         # print(resource)
         # print(resource.keys())
@@ -53,26 +52,30 @@ def formatter(resources):
             resource.pop('_status')
         if 'extension' in resource.keys():
            resource.pop('extension')
-        # test_name = ''
-        # if 'category' in resource.keys():    
-        # for category in resource['category']:
-        #     for coding in category['coding']:
-        #         test_name += '[' + coding['code'] + ']'
-        # resource.pop('category')
-        # if 'text' in resource['code'].keys():
-        #     test_name += '[' + resource['code']['text'] + ']'
-        # for coding in resource['code']['coding']:
-        #     test_name += '(' + coding['display'] + ':' + coding['code'] + ')'
-        # resource.pop('code')
-        # resource['testName'] = test_name
-        # resource['valueQuantity'] = str(resource['valueQuantity']['value']) + ' ' + resource['valueQuantity']['code'] + ' ('+resource['valueQuantity']['unit'] + ')' 
-        # print(resource)
-        # num_output += 1
-        # if num_output > 5:
-        #     break
-        # print(resource.keys())
+        if resource['resourceType'] == 'Observation':
+            test_name = ''
+            if 'category' in resource.keys():    
+                for category in resource['category']:
+                    for coding in category['coding']:
+                        test_name += '[' + coding['code'] + ']'
+                resource.pop('category')
+            if 'text' in resource['code'].keys():
+                test_name += '[' + resource['code']['text'] + ']'
+            for coding in resource['code']['coding']:
+                test_name += '(' + coding['display'] + ':' + coding['code'] + ')'
+            resource.pop('code')
+            resource['testName'] = test_name
+            if 'code' in resource.keys() and 'unit' in resource.keys():
+                resource['valueQuantity'] = str(resource['valueQuantity']['value']) + ' ' + resource['valueQuantity']['code'] + ' ('+resource['valueQuantity']['unit'] + ')'
+
+            # print(resource)
+            # num_output += 1
+            # if num_output > 5:
+            #     break
+            print(resource.keys())
 
     return "\n".join([str(resource) for resource in resources])
+
 
 def parse_patient_history(patient_history):
     result = defaultdict(list)
