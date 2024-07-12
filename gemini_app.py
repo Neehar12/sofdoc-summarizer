@@ -1,5 +1,6 @@
 import google.generativeai as genai
 from google.generativeai.types import generation_types
+import app_helper
 import PIL.Image
 import os
 from flask import Flask, request, render_template, jsonify
@@ -39,43 +40,6 @@ def index():
             return render_template('index.html', error=error)
     return render_template('index.html')
 
-def formatter(resources):
-    output = ''
-    num_output = 0
-    for resource in resources:
-        # print(resource)
-        # print(resource.keys())
-        resource.pop('meta')
-        resource.pop('id')
-        if 'subject' in resource.keys():
-            resource.pop('subject')
-        if '_status' in resource.keys():
-            resource.pop('_status')
-        if 'extension' in resource.keys():
-           resource.pop('extension')
-        if resource['resourceType'] == 'Observation':
-            test_name = ''
-            if 'category' in resource.keys():    
-                for category in resource['category']:
-                    for coding in category['coding']:
-                        test_name += '[' + coding['code'] + ']'
-                resource.pop('category')
-            if 'text' in resource['code'].keys():
-                test_name += '[' + resource['code']['text'] + ']'
-            for coding in resource['code']['coding']:
-                test_name += '(' + coding['display'] + ':' + coding['code'] + ')'
-            resource.pop('code')
-            resource['testName'] = test_name
-            if 'code' in resource.keys() and 'unit' in resource.keys():
-                resource['valueQuantity'] = str(resource['valueQuantity']['value']) + ' ' + resource['valueQuantity']['code'] + ' ('+resource['valueQuantity']['unit'] + ')'
-            # print(resource)
-            # num_output += 1
-            # if num_output > 5:
-            #     break
-            print(resource.keys())
-
-    return "\n".join([str(resource) for resource in resources])
-
 def parse_patient_history(patient_history):
     result = defaultdict(list)
 
@@ -100,7 +64,7 @@ def parse_patient_history(patient_history):
     for resource_type, resources in result.items():
         if  resource_type == 'DiagnosticReport' or resource_type == 'Patient':
             continue 
-        content = formatter(resources)
+        content = app_helper.formatter(resources)
         if resource_type == "Observation":
             summary = summarize_content(content, max_chunk_size=2000000)
         elif resource_type == "Procedure":
