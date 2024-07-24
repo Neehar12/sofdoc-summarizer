@@ -1,8 +1,10 @@
 import openai
+from openai import OpenAI
 from collections import defaultdict
 import time
 import google.generativeai as genai
 from mistralai.models.chat_completion import ChatMessage
+
 
 def get_gemini_reponse(model, message):
     config = genai.GenerationConfig(max_output_tokens=4000, temperature=0)
@@ -35,26 +37,39 @@ def get_mistral_response(client, message):
     return (chat_response.choices[0].message.content, chat_response.usage.total_tokens)
 
 
-def get_gpt_response(message, model="gpt-4o"):
-    response = openai.ChatCompletion.create(
-                model="gpt-4o",
+def get_gpt_response(client, message, model="gpt-4o"):
+    response = client.chat.completions.create(
+                model=model,
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant specialized in summarizing medical information."},
                     {"role": "user", "content": message}
                 ],
                 max_tokens=4000
             )
-    return response.choices[0].message['content']
+    
+    print('prompt_tokens:' + str(response.usage.prompt_tokens) + ', completion_tokens:' + str(response.usage.completion_tokens))
+    return response.choices[0].message.content
 
+def get_openai_embeddings(client, text):
+    response = client.embeddings.create(
+        input=text,
+        model="text-embedding-3-small",
+        # dimensions=512
+    )
+    embedding = response.data[0].embedding
+    return embedding
 
-def formatter(resources):
+def formatter(resources, remove_resource_type=True):
     output = ''
     num_output = 0
-    for resource in resources:
+    resources_copy = resources
+    for resource in resources_copy:
         # print(resource)
         # print(resource.keys())
-        resource.pop('meta')
-        resource.pop('id')
+        if 'meta' in resource:
+            resource.pop('meta')
+        if 'id' in resource:
+            resource.pop('id')
         
         if 'subject' in resource.keys():
             resource.pop('subject')
@@ -85,12 +100,12 @@ def formatter(resources):
             # num_output += 1
             # if num_output > 5:
             #     break
-        if 'resourceType' in resource.keys():
+        if 'resourceType' in resource.keys() and remove_resource_type:
            resource.pop('resourceType')
         # print(resource.keys())
     # return resources
 
-    concat_string = "\n".join([str(resource) for resource in resources])
+    concat_string = "\n".join([str(resource) for resource in resources_copy])
     # print(concat_string)
     formatted_string_1 = concat_string.replace(": ", ":")
     formatted_string_2 = formatted_string_1.replace(", ", ",")
