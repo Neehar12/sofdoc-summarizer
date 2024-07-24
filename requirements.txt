@@ -162,3 +162,14 @@ Werkzeug
 yarl
 zope.event
 zope.interface
+openai 
+chromadb 
+langchain 
+pypdf 
+tiktoken 
+wikipedia 
+nest_asyncio 
+langchain-community 
+langchain_openai 
+sentence-transformers
+langchain_chroma
