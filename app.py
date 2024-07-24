@@ -1,10 +1,10 @@
 from flask import Flask, request, render_template, jsonify
 import requests
 import openai
-import os
-import json
+from openai import OpenAI
 from collections import defaultdict
 import time
+import app_helper
 
 app = Flask(__name__)
 
@@ -13,6 +13,7 @@ openai.api_key = 'sk-proj-JAeipb6Clq2dLjB8JOePT3BlbkFJd1QYzUtRW7Kv3t2WBo0I'
 
 metriport_api_key = 'NzNCSTZuS0ZQalVoT2pmX0tfb1laOjE3Mzg4Y2Q4LTUwOGMtNDU1ZC04YzA4LWI3MjQwMzU0YTBkYg'
 API_URL = "https://api.sandbox.metriport.com/medical/v1/patient/{}/consolidated"
+client = OpenAI(api_key=openai.api_key)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -31,43 +32,7 @@ def index():
             return render_template('index.html', error=error)
     return render_template('index.html')
 
-def formatter(resources):
-    output = ''
-    num_output = 0
-    for resource in resources:
-        # print(resource)
-        # print(resource.keys())
-        resource.pop('meta')
-        resource.pop('id')
-        if 'subject' in resource.keys():
-            resource.pop('subject')
-        if '_status' in resource.keys():
-            resource.pop('_status')
-        if 'extension' in resource.keys():
-           resource.pop('extension')
-        if resource['resourceType'] == 'Observation':
-            test_name = ''
-            if 'category' in resource.keys():    
-            for category in resource['category']:
-                for coding in category['coding']:
-                    test_name += '[' + coding['code'] + ']'
-            resource.pop('category')
-            if 'text' in resource['code'].keys():
-                test_name += '[' + resource['code']['text'] + ']'
-            for coding in resource['code']['coding']:
-                test_name += '(' + coding['display'] + ':' + coding['code'] + ')'
-            resource.pop('code')
-            resource['testName'] = test_name
-            resource['valueQuantity'] = str(resource['valueQuantity']['value']) + ' ' + resource['valueQuantity']['code'] + ' ('+resource['valueQuantity']['unit'] + ')' 
-            # print(resource)
-            # num_output += 1
-            # if num_output > 5:
-            #     break
-            print(resource.keys())
-
-    return "\n".join([str(resource) for resource in resources])
-
-def parse_patient_history(patient_history):
+def parse_patient_history(patient_history, summarize=True):
     result = defaultdict(list)
 
     for entry in patient_history.get('entry', []):
@@ -75,87 +40,50 @@ def parse_patient_history(patient_history):
         resource_type = resource.get('resourceType')
         if resource_type:
             result[resource_type].append(resource)
+            resource_array.append(resource)
+    if not summarize:
+     return ""
+
+    ##################################################################
+    # Summarization (HIPAA Compliant post )
 
     summarized_history = {}
     all_summaries = []
-    
+    max_words = 200
     # Summarize "Patient" resource type first
     if "Patient" in result:
-        content = "\n".join([str(resource) for resource in result["Patient"]])
-        summary = summarize_content(content)
+        content = app_helper.formatter(result["Patient"])
+        summary = app_helper.get_gpt_response(client, f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{content}")
         summarized_history["Patient"] = summary
         all_summaries.append(summary)
         del result["Patient"]
-    
+
+    print(result.keys())
     # Summarize the rest of the resource types
     for resource_type, resources in result.items():
         if  resource_type == 'DiagnosticReport' or resource_type == 'Patient':
             continue 
-        content = formatter(resources)
-        if resource_type == "Observation":
-            summary = summarize_content(content, max_chunk_size=30000, sleep_time=15)
-        elif resource_type == "Procedure":
-            summary = summarize_content(content, sleep_time=15)
-        else:
-            summary = summarize_content(content)
+        content = app_helper.formatter(resources)        
+        summary = app_helper.get_gpt_response(client, f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{content}")
         summarized_history[resource_type] = summary
-        if resource_type != "Patient":
-            all_summaries.append(summary)
+        all_summaries.append(summary)
     
     # Create a final summary using all the individual summaries
     concatenated_summaries = " ".join(all_summaries)
-    final_summary = summarize_content(concatenated_summaries, summary_only=True)
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+    response = client.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Here is an example summary of a patient with knee injury: Patient has a history of knee pain after being hit by a ball playing cricket ball 2 years ago. 2 MRIs were taken a year apart, latest one showed mild fraying of meniscus and bone contusion in femur. He underwent 6 physiotherapy sessions across a year. \n Use this above template to give the summary for the following patient medical history in no more than 150 words: {final_summary}"}
+            {"role": "user", "content": f"Here is an example summary of a patient with knee injury: Patient has a history of knee pain after being hit by a ball playing cricket ball 2 years ago. 2 MRIs were taken a year apart, latest one showed mild fraying of meniscus and bone contusion in femur. He underwent 6 physiotherapy sessions across a year. \n Use this above template to provide a brief summary using bullet points for the following sample medical information in no more than 100 words and highlight concerning trends. Also, provide a brief summary of past visits from the following sample medical information in no more than 100 words and highlight concerning trends. Also Provide a brief summary of past medications from the following sample medical information in no more than 100 words and highlight concerning trends. Provide a brief summary of past test and examination results from the following sample medical information in no more than 100 words and highlight concerning trends. Here is the sample  medical information:\n\n: {concatenated_summaries}"}
         ],
-        max_tokens=512,
-        temperature=0.0,
-        top_p=0.9
+        max_tokens=1024,
+        temperature=0.0
     )
+    print('prompt_tokens:' + str(response.usage.prompt_tokens) + ', completion_tokens:' + str(response.usage.completion_tokens))
     ultimate_summary = response.choices[0].message.content.strip()
     
     return summarized_history, ultimate_summary
 
-def summarize_content(content, max_chunk_size=20000, max_words=500, summary_only=False, sleep_time=10):
-    try:
-        # Split content into chunks if it exceeds the maximum chunk size
-        chunks = []
-        while len(content) > max_chunk_size and not summary_only:
-            chunk = content[:max_chunk_size]
-            last_newline = chunk.rfind('\n')
-            if last_newline != -1:
-                chunk = content[:last_newline]
-            chunks.append(chunk)
-            content = content[len(chunk):]
-        chunks.append(content)
-
-        # Summarize each chunk and keep only the summary of the last chunk
-        previous_summary = ""
-        for chunk in chunks:
-            chunk_with_previous_summary = previous_summary + "\n" + chunk if previous_summary else chunk
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant specialized in summarizing medical information."},
-                    {"role": "user", "content": f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{chunk_with_previous_summary}"}
-                ],
-                max_tokens=4000
-            )
-            previous_summary = response.choices[0].message['content'].strip()
-            time.sleep(sleep_time) #needs to be optimized
-            
-            # Ensure the summary is not more than max_words
-            words = previous_summary.split()
-            if len(words) > max_words:
-                previous_summary = ' '.join(words[:max_words])
-        
-        # Return the summary of the last chunk
-        return previous_summary
-    except Exception as e:
-        return f"Error in summarizing content: {str(e)}"
 
 if __name__ == '__main__':
     app.run(debug=True)
