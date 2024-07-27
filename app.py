@@ -9,7 +9,7 @@ import app_helper
 app = Flask(__name__)
 
 # Set your OpenAI API key here
-openai.api_key = 'sk-proj-JAeipb6Clq2dLjB8JOePT3BlbkFJd1QYzUtRW7Kv3t2WBo0I'
+openai.api_key = 'sk-proj-kHoXD3aKcluuSADuVNZBT3BlbkFJVFiHGTt0BRah1ra9ZGql'
 
 metriport_api_key = 'NzNCSTZuS0ZQalVoT2pmX0tfb1laOjE3Mzg4Y2Q4LTUwOGMtNDU1ZC04YzA4LWI3MjQwMzU0YTBkYg'
 API_URL = "https://api.sandbox.metriport.com/medical/v1/patient/{}/consolidated"
@@ -40,7 +40,7 @@ def parse_patient_history(patient_history, summarize=True):
         resource_type = resource.get('resourceType')
         if resource_type:
             result[resource_type].append(resource)
-            resource_array.append(resource)
+            # resource_array.append(resource)
     if not summarize:
      return ""
 
