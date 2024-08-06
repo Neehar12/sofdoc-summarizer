@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify
 import requests
 import openai
 from openai import OpenAI
 from collections import defaultdict
 import time
 import app_helper
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 app = Flask(__name__)
 
@@ -14,23 +16,90 @@ openai.api_key = 'sk-proj-kHoXD3aKcluuSADuVNZBT3BlbkFJVFiHGTt0BRah1ra9ZGql'
 metriport_api_key = 'NzNCSTZuS0ZQalVoT2pmX0tfb1laOjE3Mzg4Y2Q4LTUwOGMtNDU1ZC04YzA4LWI3MjQwMzU0YTBkYg'
 API_URL = "https://api.sandbox.metriport.com/medical/v1/patient/{}/consolidated"
 client = OpenAI(api_key=openai.api_key)
+user_email = "dummy@gmail.com"
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
+# AWS S3 setup
+aws_access_key_id = 'AKIA2ES25DXDJPSZ3S5Z'
+aws_secret_access_key = '8z9BnFDlafd+wMCwHRrQ6djNmEqRh5/PPTqVh8sp'
+aws_region = 'us-west-2'
+
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=aws_region
+)
+
+main_bucket_name = "sofdoc-autoprep"
+user_bucket_prefix = f"{user_email.replace('@', '-').replace('.', '-')}"
+
+def create_bucket_if_not_exists(bucket_name):
+    try:
+        s3.head_bucket(Bucket=bucket_name)
+    except:
+        s3.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': aws_region})
+
+def save_summary_to_s3(patient_name, summary):
+    create_bucket_if_not_exists(main_bucket_name)
+    file_name = f"{patient_name}.txt"
+    s3.put_object(Bucket=main_bucket_name, Key=f"{user_bucket_prefix}/{file_name}", Body=summary)
+
+def list_summaries_from_s3():
+    create_bucket_if_not_exists(main_bucket_name)
+    response = s3.list_objects_v2(Bucket=main_bucket_name, Prefix=user_bucket_prefix)
+    files = response.get('Contents', [])
+    sorted_files = sorted(files, key=lambda x: x['LastModified'], reverse=True)
+    return sorted_files[:5] if len(sorted_files) > 5 else sorted_files
+
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/add-patient', methods=['GET', 'POST'])
+def add_patient():
     if request.method == 'POST':
-        patient_id = request.form['patient_id']
+        patient = {
+            'first_name': request.form['first_name'],
+            'last_name': request.form['last_name'],
+            'dob': request.form['dob'],
+            'gender': request.form['gender'],
+            'address': request.form['address'],
+            'patient_id': request.form['patient_id']
+        }
+        patient_full_name = f"{patient['first_name']} {patient['last_name']}"
+        
         headers = {
             'x-api-key': metriport_api_key
         }
-        response = requests.get(API_URL.format(patient_id), headers=headers)
+        response = requests.get(API_URL.format(patient['patient_id']), headers=headers)
         if response.status_code == 200:
             patient_history = response.json()
-            parsed_history, final_summary = parse_patient_history(patient_history)
-            return render_template('index.html', patient_history=parsed_history, final_summary=final_summary)
-        else:
-            error = f"Error: {response.status_code}, {response.text}"
-            return render_template('index.html', error=error)
-    return render_template('index.html')
+            _, final_summary = parse_patient_history(patient_history)
+            save_summary_to_s3(patient_full_name, final_summary)
+        
+        return redirect(url_for('view_summaries'))
+    return render_template('add_patient.html')
+
+@app.route('/view-summaries', methods=['GET', 'POST'])
+def view_summaries():
+    summaries = list_summaries_from_s3()
+    selected_summary = None
+    if request.method == 'POST':
+        file_name = request.form['file_name']
+        summary_obj = s3.get_object(Bucket=main_bucket_name, Key=f"{user_bucket_prefix}/{file_name}")
+        selected_summary = summary_obj['Body'].read().decode('utf-8')
+    return render_template('view_summaries.html', summaries=summaries, selected_summary=selected_summary)
+
+@app.route('/get-latest-summaries')
+def get_latest_summaries():
+    summaries = list_summaries_from_s3()
+    summaries_list = [
+        {
+            'Key': summary['Key'].split('/')[-1],
+            'LastModified': summary['LastModified']
+        } for summary in summaries
+    ]
+    return jsonify(summaries_list)
 
 def parse_patient_history(patient_history, summarize=True):
     result = defaultdict(list)
@@ -40,17 +109,13 @@ def parse_patient_history(patient_history, summarize=True):
         resource_type = resource.get('resourceType')
         if resource_type:
             result[resource_type].append(resource)
-            # resource_array.append(resource)
     if not summarize:
-     return ""
-
-    ##################################################################
-    # Summarization (HIPAA Compliant post )
+        return ""
 
     summarized_history = {}
     all_summaries = []
     max_words = 200
-    # Summarize "Patient" resource type first
+
     if "Patient" in result:
         content = app_helper.formatter(result["Patient"])
         summary = app_helper.get_gpt_response(client, f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{content}")
@@ -58,17 +123,14 @@ def parse_patient_history(patient_history, summarize=True):
         all_summaries.append(summary)
         del result["Patient"]
 
-    print(result.keys())
-    # Summarize the rest of the resource types
     for resource_type, resources in result.items():
-        if  resource_type == 'DiagnosticReport' or resource_type == 'Patient':
+        if resource_type == 'DiagnosticReport' or resource_type == 'Patient':
             continue 
         content = app_helper.formatter(resources)        
         summary = app_helper.get_gpt_response(client, f"Summarize the following medical information in no more than {max_words} words and highlight concerning trends:\n\n{content}")
         summarized_history[resource_type] = summary
         all_summaries.append(summary)
     
-    # Create a final summary using all the individual summaries
     concatenated_summaries = " ".join(all_summaries)
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -79,11 +141,9 @@ def parse_patient_history(patient_history, summarize=True):
         max_tokens=1024,
         temperature=0.0
     )
-    print('prompt_tokens:' + str(response.usage.prompt_tokens) + ', completion_tokens:' + str(response.usage.completion_tokens))
     ultimate_summary = response.choices[0].message.content.strip()
     
     return summarized_history, ultimate_summary
-
 
 if __name__ == '__main__':
     app.run(debug=True)

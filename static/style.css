@@ -1,55 +1,124 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #ffffff; /* Set the background color to white */
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    display: flex;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.top-bar {
+    width: 100%;
+    background-color: #ffffff; /* Set the top bar background to white */
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: flex-start; /* Align content to the left */
+    z-index: 1000;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
+.top-bar-content {
+    display: flex;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    width: 50px; /* Adjust the size as needed */
+    height: auto;
+    margin-right: 10px;
+}
+
+.product-name {
+    color: #000000; /* Set the text color to black */
+    margin: 0;
+    font-size: 24px; /* Adjust the size as needed */
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #f4f4f4; /* Light gray for sidebar background */
+    padding-top: 80px; /* Add padding to account for the fixed top bar */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar a {
+    display: block;
+    padding: 15px;
+    text-decoration: none;
+    color: #000000; /* Black for text color */
+    font-size: 18px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar a:hover {
+    background-color: #dddddd; /* Slightly darker gray on hover */
+}
+
+.container, .content {
+    margin-left: 220px; /* Space for sidebar */
+    padding: 20px;
+    width: calc(100% - 220px); /* Adjust width to account for sidebar */
+    margin-top: 80px; /* Add margin to accommodate the fixed top bar */
 }
 
 form {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     margin-bottom: 20px;
 }
 
-input[type="text"] {
+input[type="text"], input[type="date"], select {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid #000000; /* Set the border color to black */
     border-radius: 4px;
-    width: 60%;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 button {
     padding: 10px 20px;
     font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
+    color: #ffffff; /* Set the button text color to white */
+    background-color: #000000; /* Set the button background to black */
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin-left: 10px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #333333; /* Set a darker color for hover effect */
+}
+
+.view-button {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.view-button:hover {
+    background: #333333;
 }
 
 .error {
-    color: red;
+    color: #ff0000; /* Set the error color to red for visibility */
     text-align: center;
     margin-top: 20px;
 }
@@ -58,21 +127,40 @@ button:hover {
     margin-top: 20px;
 }
 
+.summaries-list {
+    list-style: none;
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.row .col {
+    flex: 1;
+    padding: 5px;
+}
+
 .summary-box {
-    background-color: #e9ecef;
-    border: 1px solid #ddd;
+    background-color: #f9f9f9; /* Set the summary box background to a light gray */
+    border: 1px solid #000000; /* Set the border color to black */
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
+    max-height: none; /* Remove any maximum height constraints */
+    overflow: auto; /* Enable scrolling if content overflows */
 }
 
 .summary-box h2 {
     margin-top: 0;
-    color: #007bff;
+    color: #000000; /* Set the heading color to black */
 }
 
 .summary-box p {
-    white-space: pre-wrap;
+    white-space: pre-wrap; /* Preserve whitespace and line breaks */
     margin: 0;
-    color: #555;
+    color: #333333; /* Set the text color to a dark gray */
 }
