@@ -77,7 +77,7 @@ def add_patient():
             _, final_summary = parse_patient_history(patient_history)
             save_summary_to_s3(patient_full_name, final_summary)
         
-        return redirect(url_for('view_summaries'))
+        return redirect(url_for('add_patient', success=True))
     return render_template('add_patient.html')
 
 @app.route('/view-summaries', methods=['GET', 'POST'])

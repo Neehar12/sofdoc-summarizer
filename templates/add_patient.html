@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Patient - SofDoc AutoPrep</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('success-message');
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000); // Hide after 5 seconds
+        }
+
+        function startProcessing() {
+            document.body.style.cursor = 'wait';
+        }
+
+        function stopProcessing() {
+            document.body.style.cursor = 'default';
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', (event) => {
+                startProcessing();
+            });
+
+            if (new URLSearchParams(window.location.search).has('success')) {
+                showSuccessMessage();
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="top-bar">
@@ -34,8 +62,9 @@
             </select>
             <input type="text" name="address" placeholder="Address" required>
             <input type="text" name="patient_id" placeholder="Patient ID" required>
-            <button type="submit">Add Patient</button>
+            <button type="submit" onclick="startProcessing()">Add Patient</button>
         </form>
+        <div id="success-message" class="success-message">Patient successfully added!</div>
     </div>
 </body>
 </html>

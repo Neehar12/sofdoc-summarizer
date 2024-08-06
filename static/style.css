@@ -164,3 +164,20 @@ button:hover {
     margin: 0;
     color: #333333; /* Set the text color to a dark gray */
 }
+
+.success-message {
+    display: none;
+    color: green;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.search-bar {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #000000; /* Set the border color to black */
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
