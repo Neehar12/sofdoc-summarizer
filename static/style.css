@@ -3,9 +3,61 @@ body {
     background-color: #ffffff; /* Set the background color to white */
     margin: 0;
     padding: 0;
-    display: flex;
+    box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+.center-content {
+    display: flex;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center the content vertically */
+    height: 100vh; /* Full viewport height */
+}
+
+.login-container {
+    text-align: center;
+}
+
+.login-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 100px; /* Adjust the size as needed */
+    height: auto;
+}
+
+.product-name {
+    color: #000000; /* Set the text color to black */
+    margin: 0;
+    font-size: 24px; /* Adjust the size as needed */
+}
+
+.login-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #ffffff; /* Set the button text color to white */
+    background-color: #000000; /* Set the button background to black */
+    border: none;
+    border-radius: 4px;
+    text-decoration: none; /* Remove underline from link */
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background-color: #333333; /* Set a darker color for hover effect */
+}
+
+/* Add styles for the main content and navigation */
 .top-bar {
     width: 100%;
     background-color: #ffffff; /* Set the top bar background to white */
@@ -15,13 +67,16 @@ body {
     top: 0;
     left: 0;
     display: flex;
-    justify-content: flex-start; /* Align content to the left */
+    justify-content: space-between; /* Align content to the space between */
+    align-items: center;
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .top-bar-content {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .logo-container {
@@ -42,15 +97,44 @@ body {
     font-size: 24px; /* Adjust the size as needed */
 }
 
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Move user info to the right */
+    align-items: center; /* Align items vertically centered */
+}
+
+.user-info span {
+    margin-right: 10px;
+}
+
+.button, .view-button, .summary-action-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center; /* Center the text vertically */
+    height: 40px; /* Adjust the height to match the line height */
+}
+
+.button:hover, .view-button:hover, .summary-action-button:hover {
+    background-color: #333333;
+}
+
 .sidebar {
     width: 200px;
     background-color: #f4f4f4; /* Light gray for sidebar background */
-    padding-top: 80px; /* Add padding to account for the fixed top bar */
+    padding-top: 50px; /* Add padding to account for the fixed top bar */
     position: fixed;
-    top: 0;
+    top: 50px; /* Ensure the sidebar starts below the top bar */
     left: 0;
-    height: 100%;
+    height: calc(100% - 50px); /* Adjust height to account for top bar */
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; /* Add vertical scrolling if necessary */
 }
 
 .sidebar a {
@@ -67,10 +151,10 @@ body {
 }
 
 .container, .content {
-    margin-left: 220px; /* Space for sidebar */
+    margin-left: 200px; /* Space for sidebar */
     padding: 20px;
-    width: calc(100% - 220px); /* Adjust width to account for sidebar */
-    margin-top: 80px; /* Add margin to accommodate the fixed top bar */
+    width: calc(100% - 200px); /* Adjust width to account for sidebar */
+    margin-top: 70px; /* Add margin to accommodate the fixed top bar */
 }
 
 form {
@@ -97,24 +181,13 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    display: flex;
+    align-items: center; /* Center the text vertically */
+    height: 40px; /* Adjust the height to match the line height */
 }
 
 button:hover {
     background-color: #333333; /* Set a darker color for hover effect */
-}
-
-.view-button {
-    background: #000000;
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 4px;
-}
-
-.view-button:hover {
-    background: #333333;
 }
 
 .error {
@@ -135,6 +208,7 @@ button:hover {
 .row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 10px;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -152,6 +226,7 @@ button:hover {
     margin-bottom: 20px;
     max-height: none; /* Remove any maximum height constraints */
     overflow: auto; /* Enable scrolling if content overflows */
+    position: relative;
 }
 
 .summary-box h2 {
@@ -163,6 +238,14 @@ button:hover {
     white-space: pre-wrap; /* Preserve whitespace and line breaks */
     margin: 0;
     color: #333333; /* Set the text color to a dark gray */
+}
+
+.summary-box .summary-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
 }
 
 .success-message {

@@ -28,6 +28,27 @@
             });
         }
 
+        function copyToClipboard() {
+            const summaryText = document.querySelector('.summary-box p').innerText;
+            const textArea = document.createElement('textarea');
+            textArea.value = summaryText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Summary copied to clipboard!');
+        }
+
+        function printSummary() {
+            const printContent = document.querySelector('.summary-box').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            window.location.reload();
+        }
+
         document.addEventListener('DOMContentLoaded', (event) => {
             function fetchLatestSummaries() {
                 startProcessing();
@@ -75,6 +96,14 @@
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="SofDoc Logo" class="logo">
                 <h1 class="product-name">SofDoc AutoPrep</h1>
             </a>
+            {% if session['user'] %}
+                <div class="user-info">
+                    <span>{{ session['user']['name'] }}</span>
+                    <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
+                        <button type="submit" class="button">Logout</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="sidebar">
@@ -105,6 +134,10 @@
         {% if selected_summary %}
             <div class="summary-box">
                 <h2>Patient Summary</h2>
+                <div class="summary-actions">
+                    <button class="summary-action-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+                    <button class="summary-action-button" onclick="printSummary()">Print</button>
+                </div>
                 <p>{{ selected_summary }}</p>
             </div>
         {% endif %}
