@@ -173,3 +173,12 @@ langchain-community
 langchain_openai 
 sentence-transformers
 langchain_chroma
+mistralai
+google-generativeai
+Flask-Dance
+requests-oauthlib
+Flask-SQLAlchemy
+Authlib
+boto3
+celery
+redis

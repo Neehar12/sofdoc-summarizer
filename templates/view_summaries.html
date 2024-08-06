@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Summaries - SofDoc AutoPrep</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            function fetchLatestSummaries() {
+                fetch('/get-latest-summaries')
+                    .then(response => response.json())
+                    .then(data => {
+                        const summariesList = document.getElementById('summaries-list');
+                        summariesList.innerHTML = '';
+                        data.forEach(summary => {
+                            const li = document.createElement('li');
+                            const date = new Date(summary.LastModified);
+                            li.innerHTML = `
+                                <div class="row">
+                                    <div class="col">${summary.Key.split('.')[0]}</div>
+                                    <div class="col">${date.toLocaleString()}</div>
+                                    <div class="col">
+                                        <form method="POST" action="/view-summaries" style="display:inline;">
+                                            <input type="hidden" name="file_name" value="${summary.Key}">
+                                            <button type="submit" class="view-button">View Summary</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            `;
+                            summariesList.appendChild(li);
+                        });
+                    });
+            }
+
+            fetchLatestSummaries();
+            setInterval(fetchLatestSummaries, 60000); // Update every 1 minute
+        });
+    </script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <a href="{{ url_for('home') }}" class="logo-container">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="SofDoc Logo" class="logo">
+                <h1 class="product-name">SofDoc AutoPrep</h1>
+            </a>
+        </div>
+    </div>
+    <div class="sidebar">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('add_patient') }}">Add Patient</a>
+        <a href="{{ url_for('view_summaries') }}">View Summaries</a>
+    </div>
+    <div class="content">
+        <h2>View Summaries</h2>
+        <ul id="summaries-list" class="summaries-list">
+            {% for summary in summaries %}
+                <li>
+                    <div class="row">
+                        <div class="col">{{ summary.Key.split('/')[-1].split('.')[0] }}</div>
+                        <div class="col">{{ summary.LastModified }}</div>
+                        <div class="col">
+                            <form method="POST" action="/view-summaries" style="display:inline;">
+                                <input type="hidden" name="file_name" value="{{ summary.Key.split('/')[-1] }}">
+                                <button type="submit" class="view-button">View Summary</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        {% if selected_summary %}
+            <div class="summary-box">
+                <h2>Patient Summary</h2>
+                <p>{{ selected_summary }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
