@@ -29,7 +29,7 @@
         }
 
         function copyToClipboard() {
-            const summaryText = document.querySelector('.summary-box p').innerText;
+            const summaryText = document.querySelector('.summary-box').innerHTML;
             const textArea = document.createElement('textarea');
             textArea.value = summaryText;
             document.body.appendChild(textArea);
@@ -138,7 +138,7 @@
                     <button class="summary-action-button" onclick="copyToClipboard()">Copy to Clipboard</button>
                     <button class="summary-action-button" onclick="printSummary()">Print</button>
                 </div>
-                <p>{{ selected_summary }}</p>
+                <div>{{ selected_summary | safe }}</div>
             </div>
         {% endif %}
     </div>
