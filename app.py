@@ -58,8 +58,8 @@ def create_bucket_if_not_exists(bucket_name):
 def save_summary_to_s3(user_email, patient_name, summary):
     user_bucket_prefix = f"{user_email.replace('@', '-').replace('.', '-')}"
     create_bucket_if_not_exists(main_bucket_name)
-    file_name = f"{patient_name}.txt"
-    s3.put_object(Bucket=main_bucket_name, Key=f"{user_bucket_prefix}/{file_name}", Body=summary)
+    file_name = f"{patient_name}.html"
+    s3.put_object(Bucket=main_bucket_name, Key=f"{user_bucket_prefix}/{file_name}", Body=summary, ContentType='text/html')
 
 def list_summaries_from_s3(user_email):
     user_bucket_prefix = f"{user_email.replace('@', '-').replace('.', '-')}"
@@ -196,7 +196,7 @@ def parse_patient_history(patient_history, summarize=True):
         model="gpt-4o",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Here is an example summary of a patient with knee injury: Patient has a history of knee pain after being hit by a ball playing cricket ball 2 years ago. 2 MRIs were taken a year apart, latest one showed mild fraying of meniscus and bone contusion in femur. He underwent 6 physiotherapy sessions across a year. \n Use this above template to provide a brief summary using bullet points for the following sample medical information in no more than 100 words and highlight concerning trends. Also, provide a brief summary of past visits from the following sample medical information in no more than 100 words and highlight concerning trends. Also Provide a brief summary of past medications from the following sample medical information in no more than 100 words and highlight concerning trends. Provide a brief summary of past test and examination results from the following sample medical information in no more than 100 words and highlight concerning trends. Here is the sample  medical information:\n\n: {concatenated_summaries}"}
+            {"role": "user", "content": f"Here is an example summary of a patient with knee injury: Patient has a history of knee pain after being hit by a ball playing cricket ball 2 years ago. 2 MRIs were taken a year apart, latest one showed mild fraying of meniscus and bone contusion in femur. He underwent 6 physiotherapy sessions across a year. \n Use this above template to provide a brief summary using bullet points for the following sample medical information in no more than 100 words and highlight concerning trends. Also, provide a brief summary of past visits from the following sample medical information in no more than 100 words and highlight concerning trends. Also Provide a brief summary of past medications from the following sample medical information in no more than 100 words and highlight concerning trends. Provide a brief summary of past test and examination results from the following sample medical information in no more than 100 words and highlight concerning trends. Provide the summary in an HTML format, highlighting the concerning trends in red. Here is the sample  medical information:\n\n: {concatenated_summaries}"}
         ],
         max_tokens=1024,
         temperature=0.0
