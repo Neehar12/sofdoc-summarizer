@@ -13,6 +13,14 @@
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="SofDoc Logo" class="logo">
                 <h1 class="product-name">SofDoc AutoPrep</h1>
             </a>
+            {% if session['user'] %}
+                <div class="user-info">
+                    <span>{{ session['user']['name'] }}</span>
+                    <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
+                        <button type="submit" class="button">Logout</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="sidebar">
@@ -22,7 +30,7 @@
     </div>
     <div class="content">
         <h2>Welcome to SofDoc AutoPrep</h2>
-        <p>This is the home page. Use the sidebar to navigate to other pages.</p>
+        <p>Your assistant for managing patient summaries efficiently.</p>
     </div>
 </body>
 </html>

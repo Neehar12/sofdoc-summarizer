@@ -3,43 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SofDoc AutoPrep - Patient Medical History Summary</title>
+    <title>Login - SofDoc AutoPrep</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="top-bar">
-        <div class="top-bar-content">
+<body class="center-content">
+    <div class="login-container">
+        <div class="login-header">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="SofDoc Logo" class="logo">
             <h1 class="product-name">SofDoc AutoPrep</h1>
         </div>
-    </div>
-    <div class="container">
-        <form method="POST" action="/">
-            <input type="text" name="patient_id" placeholder="Enter Patient ID" required>
-            <button type="submit">Get Summary</button>
-        </form>
-        
-        {% if error %}
-            <div class="error">{{ error }}</div>
-        {% endif %}
-
-        {% if final_summary %}
-            <div class="summary-box">
-                <h2>Overall Summary</h2>
-                <p>{{ final_summary }}</p>
-            </div>
-        {% endif %}
-
-        {% if patient_history %}
-            <div class="summaries">
-                {% for resource_type, summary in patient_history.items() %}
-                    <div class="summary-box">
-                        <h2>{{ resource_type }}</h2>
-                        <p>{{ summary }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div class="login-content">
+            <a href="{{ url_for('login') }}" class="login-button">Login with Google</a>
+        </div>
     </div>
 </body>
 </html>

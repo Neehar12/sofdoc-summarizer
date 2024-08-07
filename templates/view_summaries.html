@@ -6,8 +6,52 @@
     <title>View Summaries - SofDoc AutoPrep</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
+        function startProcessing() {
+            document.body.style.cursor = 'wait';
+        }
+
+        function stopProcessing() {
+            document.body.style.cursor = 'default';
+        }
+
+        function filterSummaries() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const summaries = document.querySelectorAll('.summary-row');
+
+            summaries.forEach(summary => {
+                const patientName = summary.querySelector('.patient-name').textContent.toLowerCase();
+                if (patientName.includes(searchInput)) {
+                    summary.style.display = '';
+                } else {
+                    summary.style.display = 'none';
+                }
+            });
+        }
+
+        function copyToClipboard() {
+            const summaryText = document.querySelector('.summary-box p').innerText;
+            const textArea = document.createElement('textarea');
+            textArea.value = summaryText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Summary copied to clipboard!');
+        }
+
+        function printSummary() {
+            const printContent = document.querySelector('.summary-box').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            window.location.reload();
+        }
+
         document.addEventListener('DOMContentLoaded', (event) => {
             function fetchLatestSummaries() {
+                startProcessing();
                 fetch('/get-latest-summaries')
                     .then(response => response.json())
                     .then(data => {
@@ -16,25 +60,32 @@
                         data.forEach(summary => {
                             const li = document.createElement('li');
                             const date = new Date(summary.LastModified);
+                            li.classList.add('summary-row');
                             li.innerHTML = `
                                 <div class="row">
-                                    <div class="col">${summary.Key.split('.')[0]}</div>
+                                    <div class="col patient-name">${summary.Key.split('.')[0]}</div>
                                     <div class="col">${date.toLocaleString()}</div>
                                     <div class="col">
                                         <form method="POST" action="/view-summaries" style="display:inline;">
                                             <input type="hidden" name="file_name" value="${summary.Key}">
-                                            <button type="submit" class="view-button">View Summary</button>
+                                            <button type="submit" class="view-button" onclick="startProcessing()">View Summary</button>
                                         </form>
                                     </div>
                                 </div>
                             `;
                             summariesList.appendChild(li);
                         });
+                        stopProcessing();
+                    })
+                    .catch(() => {
+                        stopProcessing();
                     });
             }
 
             fetchLatestSummaries();
             setInterval(fetchLatestSummaries, 60000); // Update every 1 minute
+
+            document.getElementById('search-input').addEventListener('input', filterSummaries);
         });
     </script>
 </head>
@@ -45,6 +96,14 @@
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="SofDoc Logo" class="logo">
                 <h1 class="product-name">SofDoc AutoPrep</h1>
             </a>
+            {% if session['user'] %}
+                <div class="user-info">
+                    <span>{{ session['user']['name'] }}</span>
+                    <form action="{{ url_for('logout') }}" method="get" style="display: inline;">
+                        <button type="submit" class="button">Logout</button>
+                    </form>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="sidebar">
@@ -54,16 +113,17 @@
     </div>
     <div class="content">
         <h2>View Summaries</h2>
+        <input type="text" id="search-input" placeholder="Search patient name" class="search-bar">
         <ul id="summaries-list" class="summaries-list">
             {% for summary in summaries %}
-                <li>
+                <li class="summary-row">
                     <div class="row">
-                        <div class="col">{{ summary.Key.split('/')[-1].split('.')[0] }}</div>
+                        <div class="col patient-name">{{ summary.Key.split('/')[-1].split('.')[0] }}</div>
                         <div class="col">{{ summary.LastModified }}</div>
                         <div class="col">
                             <form method="POST" action="/view-summaries" style="display:inline;">
                                 <input type="hidden" name="file_name" value="{{ summary.Key.split('/')[-1] }}">
-                                <button type="submit" class="view-button">View Summary</button>
+                                <button type="submit" class="view-button" onclick="startProcessing()">View Summary</button>
                             </form>
                         </div>
                     </div>
@@ -74,6 +134,10 @@
         {% if selected_summary %}
             <div class="summary-box">
                 <h2>Patient Summary</h2>
+                <div class="summary-actions">
+                    <button class="summary-action-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+                    <button class="summary-action-button" onclick="printSummary()">Print</button>
+                </div>
                 <p>{{ selected_summary }}</p>
             </div>
         {% endif %}
