@@ -6,87 +6,59 @@
     <title>View Summaries - SofDoc AutoPrep</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
-        function startProcessing() {
-            document.body.style.cursor = 'wait';
+        function showSummary(summaryId) {
+            const summaries = document.querySelectorAll('.summary-content');
+            summaries.forEach(summary => summary.style.display = 'none');
+            
+            const selectedSummary = document.getElementById(summaryId);
+            selectedSummary.style.display = 'block';
+
+            // Update the copy and print functions to target the current visible content
+            const copyButton = document.getElementById('copyButton');
+            const printButton = document.getElementById('printButton');
+
+            copyButton.onclick = function() {
+                copyToClipboard(selectedSummary);
+            };
+
+            printButton.onclick = function() {
+                printSummary(selectedSummary);
+            };
         }
 
-        function stopProcessing() {
-            document.body.style.cursor = 'default';
-        }
-
-        function filterSummaries() {
-            const searchInput = document.getElementById('search-input').value.toLowerCase();
-            const summaries = document.querySelectorAll('.summary-row');
-
-            summaries.forEach(summary => {
-                const patientName = summary.querySelector('.patient-name').textContent.toLowerCase();
-                if (patientName.includes(searchInput)) {
-                    summary.style.display = '';
-                } else {
-                    summary.style.display = 'none';
-                }
-            });
-        }
-
-        function copyToClipboard() {
-            const summaryText = document.querySelector('.summary-box').innerHTML;
+        function copyToClipboard(visibleSummary) {
+            const summaryText = visibleSummary ? visibleSummary.innerText : '';
             const textArea = document.createElement('textarea');
             textArea.value = summaryText;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            alert('Summary copied to clipboard!');
+            const copyButton = document.getElementById('copyButton');
+            copyButton.setAttribute('title', 'Copied to clipboard');
+            copyButton.innerText = "Copied"; // Temporarily change the button text
+            setTimeout(() => {
+                copyButton.innerText = "Copy"; // Reset the button text after a short delay
+                copyButton.setAttribute('title', 'Copy to clipboard'); // Reset the tooltip
+            }, 2000); // 2 seconds delay
         }
 
-        function printSummary() {
-            const printContent = document.querySelector('.summary-box').innerHTML;
-            const originalContent = document.body.innerHTML;
-
-            document.body.innerHTML = printContent;
-            window.print();
-            document.body.innerHTML = originalContent;
-            window.location.reload();
+        function printSummary(visibleSummary) {
+            const printContent = visibleSummary ? visibleSummary.innerHTML : '';
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Print Summary</title>');
+            printWindow.document.write('<style>body{font-family: Arial, sans-serif; padding: 20px;}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(printContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            function fetchLatestSummaries() {
-                startProcessing();
-                fetch('/get-latest-summaries')
-                    .then(response => response.json())
-                    .then(data => {
-                        const summariesList = document.getElementById('summaries-list');
-                        summariesList.innerHTML = '';
-                        data.forEach(summary => {
-                            const li = document.createElement('li');
-                            const date = new Date(summary.LastModified);
-                            li.classList.add('summary-row');
-                            li.innerHTML = `
-                                <div class="row">
-                                    <div class="col patient-name">${summary.Key.split('.')[0]}</div>
-                                    <div class="col">${date.toLocaleString()}</div>
-                                    <div class="col">
-                                        <form method="POST" action="/view-summaries" style="display:inline;">
-                                            <input type="hidden" name="file_name" value="${summary.Key}">
-                                            <button type="submit" class="view-button" onclick="startProcessing()">View Summary</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            `;
-                            summariesList.appendChild(li);
-                        });
-                        stopProcessing();
-                    })
-                    .catch(() => {
-                        stopProcessing();
-                    });
-            }
-
-            fetchLatestSummaries();
-            setInterval(fetchLatestSummaries, 60000); // Update every 1 minute
-
-            document.getElementById('search-input').addEventListener('input', filterSummaries);
-        });
+        // Ensure the main summary is shown by default and functions are set
+        window.onload = function() {
+            showSummary('main_summary');
+        };
     </script>
 </head>
 <body>
@@ -111,34 +83,68 @@
         <a href="{{ url_for('add_patient') }}">Add Patient</a>
         <a href="{{ url_for('view_summaries') }}">View Summaries</a>
     </div>
-    <div class="content">
+    <div class="container">
         <h2>View Summaries</h2>
-        <input type="text" id="search-input" placeholder="Search patient name" class="search-bar">
-        <ul id="summaries-list" class="summaries-list">
-            {% for summary in summaries %}
-                <li class="summary-row">
-                    <div class="row">
-                        <div class="col patient-name">{{ summary.Key.split('/')[-1].split('.')[0] }}</div>
-                        <div class="col">{{ summary.LastModified }}</div>
-                        <div class="col">
-                            <form method="POST" action="/view-summaries" style="display:inline;">
-                                <input type="hidden" name="file_name" value="{{ summary.Key.split('/')[-1] }}">
-                                <button type="submit" class="view-button" onclick="startProcessing()">View Summary</button>
-                            </form>
+        {% if message %}
+            <p>{{ message }}</p>
+        {% else %}
+            <div class="patient-list">
+                {% for patient, date in patient_data %}
+                    <div class="patient-row">
+                        <div class="patient-name">{{ patient.replace('-', ' ').title() }}</div>
+                        <div class="patient-date">{{ date }}</div>
+                        <div class="patient-actions">
+                            <a href="{{ url_for('view_summaries', patient_name=patient.replace('-', ' ')) }}" class="view-button">View Summary</a>
                         </div>
                     </div>
-                </li>
-            {% endfor %}
-        </ul>
+                {% endfor %}
+            </div>
+        {% endif %}
         
-        {% if selected_summary %}
+        {% if selected_patient %}
+            <div class="tab-container">
+                <button class="tab-button" onclick="showSummary('main_summary')">Patient Summary</button>
+                <button class="tab-button" onclick="showSummary('Observation_summary')">Labs</button>
+                <button class="tab-button" onclick="showSummary('Procedure_summary')">Surgeries</button>
+                <button class="tab-button" onclick="showSummary('Immunization_summary')">Vaccinations</button>
+                <button class="tab-button" onclick="showSummary('Medications_summary')">Medications</button>
+                <button class="tab-button" onclick="showSummary('Condition_summary')">Conditions</button>
+                <button class="tab-button" onclick="showSummary('Encounter_summary')">Previous Visits</button>
+                <button class="tab-button" onclick="showSummary('Documents')">Documents</button>
+            </div>
+            
             <div class="summary-box">
-                <h2>Patient Summary</h2>
+                <h2>{{ selected_patient.title() }}</h2>
                 <div class="summary-actions">
-                    <button class="summary-action-button" onclick="copyToClipboard()">Copy to Clipboard</button>
-                    <button class="summary-action-button" onclick="printSummary()">Print</button>
+                    <button class="summary-action-button" id="copyButton" title="Copy to clipboard">Copy</button>
+                    <button class="summary-action-button" id="printButton">Print</button>
                 </div>
-                <div>{{ selected_summary | safe }}</div>
+                {% for summary in summaries %}
+                    <div id="{{ summary.Key.split('/')[-1].split('.')[0] }}" class="summary-content" style="display:none;">
+                        {{ summary.Content | safe }}
+                    </div>
+                {% endfor %}
+
+                <div id="Documents" class="summary-content" style="display:none;">
+                    <table class="document-table">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                                <tr>
+                                    <td>{{ document }}</td>
+                                    <td>
+                                        <a href="{{ url_for('download_document', patient_name=selected_patient, document_name=document) }}" class="document-action-button">Download</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         {% endif %}
     </div>
