@@ -1,9 +1,69 @@
+/* Styling for the patient list */
+.patient-list {
+    margin-top: 20px;
+}
+
+.patient-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.patient-name, .patient-date, .patient-actions {
+    flex: 1;
+    padding: 5px;
+}
+
+.patient-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Document table styling */
+.document-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.document-table th, .document-table td {
+    padding: 8px;
+    text-align: left;
+}
+
+.document-table th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+.document-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.document-action-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+    text-decoration: none; /* Remove underline */
+}
+
+.document-action-button:hover {
+    background-color: #333333;
+}
+
+/* Other existing styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #ffffff; /* Set the background color to white */
+    background-color: #ffffff;
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* Ensure padding and border are included in element's total width and height */
+    box-sizing: border-box;
 }
 
 *,
@@ -14,9 +74,9 @@ body {
 
 .center-content {
     display: flex;
-    justify-content: center; /* Center the content horizontally */
-    align-items: center; /* Center the content vertically */
-    height: 100vh; /* Full viewport height */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .login-container {
@@ -31,43 +91,42 @@ body {
 }
 
 .logo {
-    width: 100px; /* Adjust the size as needed */
+    width: 100px;
     height: auto;
 }
 
 .product-name {
-    color: #000000; /* Set the text color to black */
+    color: #000000;
     margin: 0;
-    font-size: 24px; /* Adjust the size as needed */
+    font-size: 24px;
 }
 
 .login-button {
     display: inline-block;
     padding: 10px 20px;
     font-size: 16px;
-    color: #ffffff; /* Set the button text color to white */
-    background-color: #000000; /* Set the button background to black */
+    color: #ffffff;
+    background-color: #000000;
     border: none;
     border-radius: 4px;
-    text-decoration: none; /* Remove underline from link */
+    text-decoration: none;
     cursor: pointer;
 }
 
 .login-button:hover {
-    background-color: #333333; /* Set a darker color for hover effect */
+    background-color: #333333;
 }
 
-/* Add styles for the main content and navigation */
 .top-bar {
     width: 100%;
-    background-color: #ffffff; /* Set the top bar background to white */
+    background-color: #ffffff;
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: fixed;
     top: 0;
     left: 0;
     display: flex;
-    justify-content: space-between; /* Align content to the space between */
+    justify-content: space-between;
     align-items: center;
     z-index: 1000;
     box-sizing: border-box;
@@ -86,22 +145,22 @@ body {
 }
 
 .logo {
-    width: 50px; /* Adjust the size as needed */
+    width: 50px;
     height: auto;
     margin-right: 10px;
 }
 
 .product-name {
-    color: #000000; /* Set the text color to black */
+    color: #000000;
     margin: 0;
-    font-size: 24px; /* Adjust the size as needed */
+    font-size: 24px;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    margin-left: auto; /* Move user info to the right */
-    align-items: center; /* Align items vertically centered */
+    margin-left: auto;
+    align-items: center;
 }
 
 .user-info span {
@@ -117,8 +176,8 @@ body {
     border-radius: 4px;
     cursor: pointer;
     display: flex;
-    align-items: center; /* Center the text vertically */
-    height: 40px; /* Adjust the height to match the line height */
+    align-items: center;
+    height: 40px;
 }
 
 .button:hover, .view-button:hover, .summary-action-button:hover {
@@ -127,34 +186,34 @@ body {
 
 .sidebar {
     width: 200px;
-    background-color: #f4f4f4; /* Light gray for sidebar background */
-    padding-top: 50px; /* Add padding to account for the fixed top bar */
+    background-color: #f4f4f4;
+    padding-top: 50px;
     position: fixed;
-    top: 50px; /* Ensure the sidebar starts below the top bar */
+    top: 50px;
     left: 0;
-    height: calc(100% - 50px); /* Adjust height to account for top bar */
+    height: calc(100% - 50px);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; /* Add vertical scrolling if necessary */
+    overflow-y: auto;
 }
 
 .sidebar a {
     display: block;
     padding: 15px;
     text-decoration: none;
-    color: #000000; /* Black for text color */
+    color: #000000;
     font-size: 18px;
     border-bottom: 1px solid #e0e0e0;
 }
 
 .sidebar a:hover {
-    background-color: #dddddd; /* Slightly darker gray on hover */
+    background-color: #dddddd;
 }
 
 .container, .content {
-    margin-left: 200px; /* Space for sidebar */
+    margin-left: 200px;
     padding: 20px;
-    width: calc(100% - 200px); /* Adjust width to account for sidebar */
-    margin-top: 70px; /* Add margin to accommodate the fixed top bar */
+    width: calc(100% - 200px);
+    margin-top: 70px;
 }
 
 form {
@@ -166,7 +225,7 @@ form {
 input[type="text"], input[type="date"], select {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #000000; /* Set the border color to black */
+    border: 1px solid #000000;
     border-radius: 4px;
     margin-bottom: 10px;
     width: 100%;
@@ -176,22 +235,22 @@ input[type="text"], input[type="date"], select {
 button {
     padding: 10px 20px;
     font-size: 16px;
-    color: #ffffff; /* Set the button text color to white */
-    background-color: #000000; /* Set the button background to black */
+    color: #ffffff;
+    background-color: #000000;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     display: flex;
-    align-items: center; /* Center the text vertically */
-    height: 40px; /* Adjust the height to match the line height */
+    align-items: center;
+    height: 40px;
 }
 
 button:hover {
-    background-color: #333333; /* Set a darker color for hover effect */
+    background-color: #333333;
 }
 
 .error {
-    color: #ff0000; /* Set the error color to red for visibility */
+    color: #ff0000;
     text-align: center;
     margin-top: 20px;
 }
@@ -205,39 +264,26 @@ button:hover {
     padding: 0;
 }
 
-.row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.row .col {
-    flex: 1;
-    padding: 5px;
-}
-
 .summary-box {
-    background-color: #f9f9f9; /* Set the summary box background to a light gray */
-    border: 1px solid #000000; /* Set the border color to black */
+    background-color: #f9f9f9;
+    border: 1px solid #000000;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    max-height: none; /* Remove any maximum height constraints */
-    overflow: auto; /* Enable scrolling if content overflows */
+    max-height: none;
+    overflow: auto;
     position: relative;
 }
 
 .summary-box h2 {
     margin-top: 0;
-    color: #000000; /* Set the heading color to black */
+    color: #000000;
 }
 
 .summary-box p {
-    white-space: pre-wrap; /* Preserve whitespace and line breaks */
+    white-space: pre-wrap;
     margin: 0;
-    color: #333333; /* Set the text color to a dark gray */
+    color: #333333;
 }
 
 .summary-box .summary-actions {
@@ -246,6 +292,20 @@ button:hover {
     right: 10px;
     display: flex;
     gap: 10px;
+}
+
+.summary-action-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.summary-action-button:hover {
+    background-color: #333333;
 }
 
 .success-message {
@@ -258,9 +318,37 @@ button:hover {
 .search-bar {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #000000; /* Set the border color to black */
+    border: 1px solid #000000;
     border-radius: 4px;
     width: 100%;
     box-sizing: border-box;
     margin-bottom: 20px;
+}
+
+.tab-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tab-button:hover {
+    background-color: #333333;
+}
+
+.summary-content {
+    display: none;
+}
+
+.summary-content:first-child {
+    display: block;
 }
